@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1394364061 source:/home/pi/workspace/networks/client_network/main.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/socket.h>
+	<sys/un.h>
+	<errno.h>
+
