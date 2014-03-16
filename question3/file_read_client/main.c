@@ -52,23 +52,20 @@ int main(){
 			close(clt);
 			printf("Connect failed %d\n", errno);
 			return -1;
-
-		}else{
-
 		}
 
         filecontentsize=18;
 		 // we send data!
         printf("Client sending %s\n" ,filename);
 
-		send(clt, filename, strlen(filename), 0); // we send a request
+		send(clt, &filename, strlen(filename), 0); // we send a request
 
 //        i=recv(clt, &filecontent, filecontentsize, MSG_WAITALL); // we read the request
         addr_len = sizeof(client_addr);
-        while((con=accept(srv, (struct sockaddr *)&client_addr, &addr_len))>0){ // we wait for a request to arrive
+        while((con=accept(clt, (struct sockaddr *)&server_addr, sizeof(server_addr)))>0){ // we wait for a request to arrive
             if(fork()==0){ // we create a new process to handle the request
 
-                if(recv(con, &filecontent, filecontentsize, MSG_WAITALL)>0){ // we read the request
+                if(recv(clt, &filecontent, filecontentsize, MSG_WAITALL)>0){ // we read the request
 
 
                     printf("Client received %s\n", filecontent);

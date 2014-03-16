@@ -96,7 +96,7 @@ int main(){
                         printf("Size %d\n", filecontentsize);
 
 
-						send(con, filecontent,filecontentsize, 0);
+						send(con, &filecontent,filecontentsize, 0);
 						fclose(file);
 
 				}
