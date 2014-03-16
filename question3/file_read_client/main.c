@@ -14,13 +14,17 @@ int main(){
 	int addr_len;
 	int data=0;
 	int i;
-	char* filename=NULL;
+	char filename[256];
 	char* filecontent=NULL;
 	int filecontentsize=0;
 
 	struct sockaddr_un server_addr;
 	struct sockaddr_un client_addr;
 
+    printf("please input file name with \n");
+    gets(filename);
+
+    printf("you entered %s\n",filename);
 
 
 	// we set the server address
@@ -52,20 +56,27 @@ int main(){
 		}else{
 
 		}
-        printf("please input file name\n");
-        gets(filename);
-        printf("you entered %s\n",&filename);
 
+        filecontentsize=18;
 		 // we send data!
-        printf("Client sending %s\n" ,&filename);
+        printf("Client sending %s\n" ,filename);
 
 		send(clt, filename, strlen(filename), 0); // we send a request
-		recv(clt, &filecontent, strlen(filecontent), MSG_WAITALL); // we read the answer
-		printf("Client received %d\n", data);
+
+//        i=recv(clt, &filecontent, filecontentsize, MSG_WAITALL); // we read the request
+        addr_len = sizeof(client_addr);
+        while((con=accept(srv, (struct sockaddr *)&client_addr, &addr_len))>0){ // we wait for a request to arrive
+            if(fork()==0){ // we create a new process to handle the request
+
+                if(recv(con, &filecontent, filecontentsize, MSG_WAITALL)>0){ // we read the request
 
 
-		close(clt); // we close the socket
+                    printf("Client received %s\n", filecontent);
 
+                    close(con);// we close the socket
+                }
+            }
+        }
 	}
 	return 0;
 }

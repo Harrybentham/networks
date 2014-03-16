@@ -15,14 +15,18 @@ int main(){
 	int addr_len;
 	int data=0;
 	int i;
-	char* filename=NULL;
-	char* filecontent=NULL;
+	int tmp;
+	int count=0;
+	char filename[256];
+	char filecontent[256];
 	int filecontentsize=0;
-	FILE *file=NULL;
-	char* fullname=NULL;
+	FILE *file;
+
 
 	struct sockaddr_un server_addr;
 	struct sockaddr_un client_addr;
+
+	printf("starting sever\n");
 
 	// we set the server address
 	memset(&server_addr, 0, sizeof(server_addr));
@@ -54,26 +58,47 @@ int main(){
 			printf("Listen failed %d\n", errno);
 			return -1;
 		}
+
 		addr_len = sizeof(client_addr);
+		printf("got there\n");
+
 		while((con=accept(srv, (struct sockaddr *)&client_addr, &addr_len))>0){ // we wait for a request to arrive
 			if(fork()==0){ // we create a new process to handle the request
-				while(data<100){
-					if(recv(con, &filename, strlen(filename), MSG_WAITALL)>0){ // we read the request
-						printf("Server Receieved %s\n", filename);
-						sprintf(fullname,"./%s",filename);
+                    printf("request arrived, recieving content\n");
 
-						file=fopen(fullname,"r");
-                        if( file==NULL){
-                            strcpy(filecontent, "file not found");
+					if(recv(con, &filename, 256, MSG_WAITALL)>0){ // we read the request
+						printf("Server Receieved %s\n", filename);
+
+						file=fopen(filename,"r");
+
+                        if(file==NULL){
+                            printf("danger,danger\n");
                         }else{
-                            if(fgets(filecontent,strlen(filecontent),file)==NULL){
-                                strcpy(filecontent, "nothing to read");
+                        printf("good good\n");
                         }
-                        }
-                        printf("Server Sending %d\n", data);
-						send(con, filecontent, strlen(filecontent), 0);
+
+      //                for(count=0; (count<255) && ((filecontent[count]=fgetc(file)) != EOF);count++){
+        //                   printf("%s\n",filecontent);
+          //                  printf("count %d\n",count);
+
+             //           }
+
+                        fread(filecontent,255,1,file);
+                        printf("%s\n",filecontent);
+
+                        filecontentsize=strlen(filecontent);
+                        filecontentsize++;
+
+
+
+                        filecontent[filecontentsize]='\r';
+                        printf("Server Sending %s\n", filecontent);
+                        printf("Size %d\n", filecontentsize);
+
+
+						send(con, filecontent,filecontentsize, 0);
 						fclose(file);
-					}
+
 				}
 				close(con);
 				exit(0);
@@ -81,8 +106,10 @@ int main(){
 			close(con); // server process
 			exit(0);
 		}
-		if(con<0)
+		if(con<0){
 			printf("Error %d\n", con);
 	}
+	}
+
 	return 0;
 }
